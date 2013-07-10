@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+
+    <job id="input-splitter" xmlns="http://www.springframework.org/schema/batch">
+        <step id="sitemap">
+            <tasklet>
+                <chunk reader="reader" writer="writer" commit-interval="10"/>
+            </tasklet>
+        </step>
+    </job>
+
+
+    <bean id="reader" scope="step" class="org.springframework.batch.item.file.FlatFileItemReader" >
+        <property name="resource" value="classpath:/data/big-input.txt" />
+        <property name="lineMapper">
+            <bean class="org.springframework.batch.item.file.mapping.PassThroughLineMapper" />
+        </property>
+    </bean>
+
+    <bean id="writer" scope="step" class="org.springframework.batch.item.file.MultiResourceItemWriter">
+        <property name="resource" value="file:./target/classes/data/outputfile.txt"/>
+        <property name="saveState" value="true"/>
+        <property name="itemCountLimitPerResource" value="100"/>
+        <property name="delegate">
+            <bean  class="org.springframework.batch.item.file.FlatFileItemWriter">
+                <property name="encoding" value="UTF-8"/>
+                <property name="shouldDeleteIfExists" value="true"/>
+                <property name="lineAggregator">
+                    <bean class="org.springframework.batch.item.file.transform.PassThroughLineAggregator" />
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+
+
+
+
+</beans>
